@@ -13,9 +13,9 @@ st.set_page_config(page_title="Login", layout="wide")
 
 
 # Cognito configuration
-COGNITO_USER_POOL_ID = '{{PARAMETER_COGNITO_USER_POOL_ID}}'
-COGNITO_APP_CLIENT_ID = '{{PARAMETER_COGNITO_USER_POOL_CLIENT_ID}}'
-COGNITO_REGION = '{{REGION}}'
+COGNITO_USER_POOL_ID = 'ap-south-1_StUQUYLLr'
+COGNITO_APP_CLIENT_ID = '2gjr688gqv0b8g9kce4agqklhd'
+COGNITO_REGION = 'ap-south-1'
 
 if not COGNITO_USER_POOL_ID or not COGNITO_APP_CLIENT_ID:
     st.error("Cognito configuration is missing. Please check your SSM parameters or environment variables.")

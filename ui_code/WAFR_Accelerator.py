@@ -1,6 +1,13 @@
 import streamlit as st
 from PIL import Image
 
+#Debugging aid (optional): uncomment this to verify in Streamlit Cloud
+import os
+st.write("Current working directory:", os.getcwd())
+st.write("Files in current directory:", os.listdir())
+st.write("Files in 'pages' directory:", os.listdir("pages"))
+
+# Redirect to login if not authenticated
 if 'authenticated' not in st.session_state or not st.session_state['authenticated']:
     st.warning('You are not logged in. Please log in to access this page.')
     st.switch_page("pages/1_Login.py")
