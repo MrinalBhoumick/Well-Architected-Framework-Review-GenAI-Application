@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 # Set page configuration
 st.set_page_config(page_title="Login", layout="wide")
 
+# Load Cognito configuration from Streamlit secrets
+COGNITO_USER_POOL_ID = st.secrets.get("COGNITO_USER_POOL_ID")
+COGNITO_APP_CLIENT_ID = st.secrets.get("COGNITO_APP_CLIENT_ID")
+COGNITO_REGION = st.secrets.get("COGNITO_REGION")
 
-# Cognito configuration
-COGNITO_USER_POOL_ID = 'ap-south-1_StUQUYLLr'
-COGNITO_APP_CLIENT_ID = '2gjr688gqv0b8g9kce4agqklhd'
-COGNITO_REGION = 'ap-south-1'
-
-if not COGNITO_USER_POOL_ID or not COGNITO_APP_CLIENT_ID:
-    st.error("Cognito configuration is missing. Please check your SSM parameters or environment variables.")
+# Check if necessary secrets are set
+if not COGNITO_USER_POOL_ID or not COGNITO_APP_CLIENT_ID or not COGNITO_REGION:
+    st.error("Cognito configuration is missing. Please check your secrets.toml.")
     st.stop()
 
 logger.info(f"Cognito User Pool ID: {COGNITO_USER_POOL_ID}")
@@ -81,13 +81,13 @@ else:
 
     with tab2:
         st.info("Please contact your Admin to get registered.")
-        
+
 # Navigation options
 if st.session_state['authenticated']:
     st.write("Please select where you'd like to go:")
-    
-    col1, col2, col3, = st.columns(3)
-    
+
+    col1, col2, col3 = st.columns(3)
+
     with col1:
         if st.button('  New WAFR Review    '):
             st.switch_page("pages/1_New_WAFR_Review.py")
