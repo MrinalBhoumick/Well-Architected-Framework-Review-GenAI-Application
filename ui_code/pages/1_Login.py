@@ -1,50 +1,39 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
+import requests
 import boto3
-import botocore
-import os
 import logging
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set page configuration
+# Page config
 st.set_page_config(page_title="Login", layout="wide")
 
-# Animated logo with CSS using st.markdown (HTML + CSS)
-animated_logo = """
-<style>
-@keyframes spin {
-  0% { transform: rotate(0deg);}
-  50% { transform: rotate(20deg);}
-  100% { transform: rotate(0deg);}
-}
-.animated-logo {
-  animation: spin 3s ease-in-out infinite;
-  width: 150px;
-  margin: 0 auto 20px auto;
-  display: block;
-}
-</style>
+# Load Lottie animation
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
-<img src="ui_code/assets/CWM-Logo.jpeg" class="animated-logo" alt="Workmates">
-"""
+# Replace with any animation you like from lottiefiles.com
+lottie_animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_puciaact.json")
 
-st.markdown(animated_logo, unsafe_allow_html=True)
+# Centered animation
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st_lottie(lottie_animation, height=200, key="welcome")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# Load Cognito configuration from Streamlit secrets
+# Cognito Config
 COGNITO_USER_POOL_ID = st.secrets.get("COGNITO_USER_POOL_ID")
 COGNITO_APP_CLIENT_ID = st.secrets.get("COGNITO_APP_CLIENT_ID")
 COGNITO_REGION = st.secrets.get("COGNITO_REGION")
 
-# Check if necessary secrets are set
 if not COGNITO_USER_POOL_ID or not COGNITO_APP_CLIENT_ID or not COGNITO_REGION:
-    st.error("Cognito configuration is missing. Please check your secrets.toml.")
+    st.error("Cognito configuration is missing.")
     st.stop()
-
-logger.info(f"Cognito User Pool ID: {COGNITO_USER_POOL_ID}")
-logger.info(f"Cognito App Client ID: {COGNITO_APP_CLIENT_ID}")
-logger.info(f"Cognito Region: {COGNITO_REGION}")
 
 def authenticate(username, password):
     client = boto3.client('cognito-idp', region_name=COGNITO_REGION)
@@ -52,32 +41,25 @@ def authenticate(username, password):
         resp = client.initiate_auth(
             ClientId=COGNITO_APP_CLIENT_ID,
             AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': username,
-                'PASSWORD': password,
-            }
+            AuthParameters={'USERNAME': username, 'PASSWORD': password}
         )
-        logger.info(f"Successfully authenticated user: {username}")
         return True, username
     except client.exceptions.NotAuthorizedException:
-        logger.warning(f"Authentication failed for user: {username}")
         return False, None
     except client.exceptions.UserNotFoundException:
-        logger.warning(f"User not found: {username}")
         return False, None
     except Exception as e:
-        logger.error(f"An error occurred during authentication: {str(e)}")
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"Authentication error: {str(e)}")
         return False, None
 
-# Main UI
+# Login UI
 st.title('Login')
 
 if 'authenticated' not in st.session_state:
     st.session_state['authenticated'] = False
 
 if st.session_state['authenticated']:
-    st.write(f"Welcome back, {st.session_state['username']}!")
+    st.success(f"Welcome back, {st.session_state['username']}!")
     if st.button('Logout'):
         st.session_state['authenticated'] = False
         st.session_state.pop('username', None)
@@ -92,31 +74,29 @@ else:
 
         if login_button:
             if username and password:
-                authentication_status, cognito_username = authenticate(username, password)
-                if authentication_status:
+                success, name = authenticate(username, password)
+                if success:
                     st.session_state['authenticated'] = True
-                    st.session_state['username'] = cognito_username
+                    st.session_state['username'] = name
                     st.rerun()
                 else:
                     st.warning("Invalid username or password.")
             else:
-                st.warning("Please enter both username and password")
+                st.warning("Please enter both username and password.")
 
     with tab2:
         st.info("Please contact your Admin to get registered.")
 
-# Navigation options
+# Navigation buttons
 if st.session_state['authenticated']:
     st.write("Please select where you'd like to go:")
-
     col1, col2, col3 = st.columns(3)
-
     with col1:
-        if st.button('  New WAFR Review    '):
+        if st.button('New WAFR Review'):
             st.switch_page("pages/1_New_WAFR_Review.py")
     with col2:
-        if st.button('  Existing WAFR Reviews    '):
+        if st.button('Existing WAFR Reviews'):
             st.switch_page("pages/2_Existing_WAFR_Reviews.py")
     with col3:
-        if st.button('  System Architecture    '):
+        if st.button('System Architecture'):
             st.switch_page("pages/3_System_Architecture.py")
