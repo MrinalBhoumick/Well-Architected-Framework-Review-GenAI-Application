@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
 import pandas as pd
 import datetime
 import boto3
@@ -18,6 +19,19 @@ if 'authenticated' not in st.session_state or not st.session_state['authenticate
     st.switch_page("pages/1_Login.py")
 
 st.set_page_config(page_title="WAFR Analysis Grid", layout="wide")
+
+# Load Lottie animation from local file
+def load_lottie_file(filepath: str):
+    with open(filepath, "r") as f:
+        return json.load(f)
+
+# Load animation from assets
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json")
+
+# Centered animation
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st_lottie(lottie_animation, height=250, key="welcome")
+st.markdown("</div>", unsafe_allow_html=True)
 
 def logout():
     st.session_state['authenticated'] = False
