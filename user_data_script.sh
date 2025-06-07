@@ -9,12 +9,12 @@ success=false
 # Adding retry loop for installation
 while [ $success = false ] && [ $attempt_num -le $max_attempts ]; do
   echo "Trying to install required modules... (Attempt $attempt_num)"
-  yum update -y
-  yum install -y python3 git
+  sudo yum update -y
+  sudo yum install -y python3 git
 
   # Set python and pip aliases
-  alternatives --install /usr/bin/python python /usr/bin/python3 1
-  alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+  sudo alternatives --install /usr/bin/python python /usr/bin/python3 1
+  sudo alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
   # Remove conflicting requests package
   yum remove -y python3-requests
@@ -44,7 +44,7 @@ git clone https://github.com/MrinalBhoumick/Well-Architected-Framework-Review-Ge
 cd Well-Architected-Framework-Review-GenAI-Application
 
 # Create a systemd service for Streamlit
-cat <<EOF > /etc/systemd/system/streamlit.service
+sudo tee /etc/systemd/system/streamlit.service > /dev/null <<EOF
 [Unit]
 Description=Streamlit App
 After=network.target
@@ -60,7 +60,7 @@ WantedBy=multi-user.target
 EOF
 
 # Start and enable the service
-systemctl daemon-reexec
-systemctl daemon-reload
-systemctl enable streamlit
-systemctl start streamlit
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable streamlit
+sudo systemctl start streamlit

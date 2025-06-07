@@ -3,3 +3,4 @@ constructs
 cdklabs.generative_ai_cdk_constructs
 streamlit
 boto3
+dotenv
