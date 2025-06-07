@@ -33,9 +33,6 @@ lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.js
 
 # ------------------- SHOW ANIMATION -------------------
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-st_lottie(lottie_animation, height=250, key="welcome")
-st.markdown("</div>", unsafe_allow_html=True)
-
 with st.container():
     st_lottie(lottie_animation, speed=1, width=600, height=300, key="wafr_anim")
 
