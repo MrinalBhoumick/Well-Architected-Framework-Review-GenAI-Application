@@ -1,8 +1,9 @@
 import streamlit as st
 from streamlit_lottie import st_lottie
-import requests
+import json
 import boto3
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -11,19 +12,17 @@ logger = logging.getLogger(__name__)
 # Page config
 st.set_page_config(page_title="Login", layout="wide")
 
-# Load Lottie animation
-def load_lottie_url(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
+# Load Lottie animation from local file
+def load_lottie_file(filepath: str):
+    with open(filepath, "r") as f:
+        return json.load(f)
 
-# Replace with any animation you like from lottiefiles.com
-lottie_animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_puciaact.json")
+# Load animation from assets
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331073505.json")
 
 # Centered animation
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-st_lottie(lottie_animation, height=200, key="welcome")
+st_lottie(lottie_animation, height=250, key="welcome")
 st.markdown("</div>", unsafe_allow_html=True)
 
 # Cognito Config
