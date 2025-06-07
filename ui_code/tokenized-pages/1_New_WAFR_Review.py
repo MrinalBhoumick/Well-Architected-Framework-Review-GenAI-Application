@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
 import boto3
 import uuid
 import json
@@ -21,14 +22,18 @@ if 'authenticated' not in st.session_state or not st.session_state['authenticate
     st.warning('You are not logged in. Please log in to access this page.')
     st.switch_page("pages/1_Login.py")
 
-def load_lottie_url(url: str):
-    try:
-        r = requests.get(url)
-        if r.status_code != 200:
-            return None
-        return r.json()
-    except:
-        return None 
+# Load Lottie animation from local file
+def load_lottie_file(filepath: str):
+    with open(filepath, "r") as f:
+        return json.load(f)
+
+# Load animation from assets
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json")
+
+# Centered animation
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st_lottie(lottie_animation, height=250, key="welcome")
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Set page configuration
 st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
