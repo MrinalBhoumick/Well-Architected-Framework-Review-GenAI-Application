@@ -11,6 +11,27 @@ logger = logging.getLogger(__name__)
 # Set page configuration
 st.set_page_config(page_title="Login", layout="wide")
 
+# Animated logo with CSS using st.markdown (HTML + CSS)
+animated_logo = """
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  50% { transform: rotate(20deg);}
+  100% { transform: rotate(0deg);}
+}
+.animated-logo {
+  animation: spin 3s ease-in-out infinite;
+  width: 150px;
+  margin: 0 auto 20px auto;
+  display: block;
+}
+</style>
+
+<img src="assets/CWM-Logo.jpeg" class="animated-logo" alt="Workmates">
+"""
+
+st.markdown(animated_logo, unsafe_allow_html=True)
+
 # Load Cognito configuration from Streamlit secrets
 COGNITO_USER_POOL_ID = st.secrets.get("COGNITO_USER_POOL_ID")
 COGNITO_APP_CLIENT_ID = st.secrets.get("COGNITO_APP_CLIENT_ID")
@@ -76,6 +97,8 @@ else:
                     st.session_state['authenticated'] = True
                     st.session_state['username'] = cognito_username
                     st.rerun()
+                else:
+                    st.warning("Invalid username or password.")
             else:
                 st.warning("Please enter both username and password")
 
