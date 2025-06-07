@@ -27,7 +27,7 @@ animated_logo = """
 }
 </style>
 
-<img src="assets/CWM-Logo.jpeg" class="animated-logo" alt="Workmates">
+<img src="ui_code/assets/CWM-Logo.jpeg" class="animated-logo" alt="Workmates">
 """
 
 st.markdown(animated_logo, unsafe_allow_html=True)
