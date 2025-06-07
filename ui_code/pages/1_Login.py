@@ -18,7 +18,7 @@ def load_lottie_file(filepath: str):
         return json.load(f)
 
 # Load animation from assets
-lottie_animation = load_lottie_file("assets/Animation - 1749331073505.json")
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331073505.json")
 
 # Centered animation
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
