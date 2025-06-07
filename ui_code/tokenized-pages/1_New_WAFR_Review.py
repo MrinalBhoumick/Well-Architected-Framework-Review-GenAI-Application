@@ -38,9 +38,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # Set page configuration
 st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
 
-# Load Lottie animation (example animation from lottiefiles.com)
-lottie_animation = load_lottie_url("https://lottie.host/69c40e69-e339-4b5f-96dc-0a3c53a2cb44/N0EKalAhhu.json")  # Replace with your preferred URL
-
 # Display animation at the top
 with st.container():
     st_lottie(lottie_animation, speed=1, width=600, height=300, key="wafr_anim")
