@@ -10,6 +10,9 @@ import os
 from streamlit_lottie import st_lottie
 import requests
 
+# Set page configuration
+st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
+
 # Securely set AWS credentials and configuration from Streamlit secrets
 os.environ['AWS_REGION'] = st.secrets["AWS_REGION"]
 AWS_REGION = st.secrets["AWS_REGION"]
@@ -34,9 +37,6 @@ lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.js
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 st_lottie(lottie_animation, height=250, key="welcome")
 st.markdown("</div>", unsafe_allow_html=True)
-
-# Set page configuration
-st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
 
 # Display animation at the top
 with st.container():
