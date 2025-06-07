@@ -19,7 +19,7 @@ def load_lottie_url(url: str):
     return r.json()
 
 # Replace with any animation you like from lottiefiles.com
-lottie_animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_puciaact.json")
+lottie_animation = load_lottie_url("https://app.lottiefiles.com/share/c7c1bf01-3ac7-435f-aeb1-f906faadac80")
 
 # Centered animation
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
