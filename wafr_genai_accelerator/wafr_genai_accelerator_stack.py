@@ -508,12 +508,9 @@ class WafrGenaiAcceleratorStack(Stack):
             description="Security group for ALB"
         )
         
-        # us-east-1: PrefixList: pl-3b927c52
-        # us-east-2: PrefixList: pl-b6a144df
-        # us-west-1: PrefixList: pl-4ea04527
-        # us-west-2: PrefixList: pl-82a045eb
+        # ap-south-1: PrefixList: pl-9aa247f3
         alb_security_group.add_ingress_rule(
-            ec2.Peer.prefix_list("pl-82a045eb"),
+            ec2.Peer.prefix_list("pl-9aa247f3"),
             ec2.Port.HTTP,
             "Allow inbound connections only from Cloudfront to Streamlit port"
         )
@@ -926,6 +923,14 @@ class WafrGenaiAcceleratorStack(Stack):
             }
         )
         
+        # Sanitize values to avoid passing None
+        kb_id = KB_ID or "undefined-kb-id"
+        wafr_runs_table = WAFR_RUNS_TABLE or "undefined-wafr-runs-table"
+        wafr_prompts_table = WAFR_PILLAR_QUESTIONS_PROMPT_TABLE or "undefined-wafr-prompts-table"
+        upload_bucket_name = userUploadBucket.bucket_name or "undefined-upload-bucket"
+        region = Stack.of(self).region or "ap-south-1"
+        reference_docs_bucket = WAFR_REFERENCE_DOCS_BUCKET or "undefined-reference-docs-bucket" 
+        
         #Define Lambda functions
         prepare_wafr_review = _lambda.Function(self, "prepare_wafr_review",
             runtime=_lambda.Runtime.PYTHON_3_12,
@@ -967,7 +972,7 @@ class WafrGenaiAcceleratorStack(Stack):
         generate_prompts = _lambda.Function(self, "generate_prompts_for_all_the_selected_pillars",
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="generate_prompts_for_all_the_selected_pillars.lambda_handler",
-            code=_lambda.Code.from_asset("lambda_dir/generate_prompts_for_all_the_selected_pillars"),
+            code=_lambda.Code.from_asset("lambda_dir/generate_prompts_for_six_pillars"),
             timeout=cdk.Duration.minutes(15),
             memory_size=256,
             role = startWafrReviewFunctionRole,
