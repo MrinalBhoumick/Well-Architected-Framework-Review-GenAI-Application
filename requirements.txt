@@ -2,5 +2,6 @@ aws-cdk-lib
 constructs
 cdklabs.generative_ai_cdk_constructs
 streamlit
+streamlit-lottie
 boto3
 dotenv
