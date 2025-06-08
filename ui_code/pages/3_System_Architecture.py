@@ -6,22 +6,24 @@ if 'authenticated' not in st.session_state or not st.session_state['authenticate
     st.warning('You are not logged in. Please log in to access this page.')
     st.switch_page("pages/1_Login.py")
 
+# ---------------- Dark/Light Mode Toggle -------------------
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'light'
+
+theme = st.sidebar.radio("Select Theme", ['light', 'dark'])
+st.session_state.theme = theme
+
 # ---------------- CSS Styling -------------------
-st.markdown("""
+light_css = """
     <style>
-        /* General body styling */
         body {
             font-family: 'Segoe UI', sans-serif;
         }
-
-        /* Center the logo */
         .logo-container {
             display: flex;
             justify-content: center;
             margin-bottom: 1rem;
         }
-
-        /* Card container */
         .card {
             background-color: #ffffff;
             padding: 2rem;
@@ -29,8 +31,6 @@ st.markdown("""
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
-
-        /* Tailwind-style title */
         .title {
             font-size: 2.5rem;
             font-weight: 700;
@@ -38,7 +38,6 @@ st.markdown("""
             text-align: center;
             margin-bottom: 1.5rem;
         }
-
         .header {
             font-size: 1.75rem;
             font-weight: 600;
@@ -46,30 +45,80 @@ st.markdown("""
             margin-top: 1.5rem;
             margin-bottom: 1rem;
         }
-
         .text {
             font-size: 1rem;
             line-height: 1.6;
             color: #374151;
         }
-
-        /* Logout button */
-        .logout-button {
+        .stButton > button {
             background-color: #ef4444;
             color: white;
-            border: none;
-            padding: 0.5rem 1rem;
             font-size: 1rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
+            border: none;
             cursor: pointer;
-            margin-top: 2rem;
         }
-
-        .logout-button:hover {
+        .stButton > button:hover {
             background-color: #dc2626;
         }
     </style>
-""", unsafe_allow_html=True)
+"""
+
+dark_css = """
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #111827;
+            color: #f9fafb;
+        }
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .card {
+            background-color: #1f2937;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f9fafb;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .header {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+        .stButton > button {
+            background-color: #ef4444;
+            color: white;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+        .stButton > button:hover {
+            background-color: #dc2626;
+        }
+    </style>
+"""
+
+st.markdown(dark_css if theme == 'dark' else light_css, unsafe_allow_html=True)
 
 # ---------------- Logo -------------------
 logo = Image.open("ui_code/assets/Workmates-Pic.png")
@@ -109,9 +158,5 @@ def logout():
     st.rerun()
 
 # ---------------- Logout Button -------------------
-st.sidebar.markdown(
-    '<button class="logout-button" onclick="window.location.reload();">Logout</button>',
-    unsafe_allow_html=True
-)
 if st.sidebar.button("Logout"):
     logout()
