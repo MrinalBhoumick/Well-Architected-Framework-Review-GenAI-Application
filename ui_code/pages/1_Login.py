@@ -3,7 +3,7 @@ from streamlit_lottie import st_lottie
 import json
 import boto3
 import logging
-import os
+from PIL import Image
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +20,13 @@ def load_lottie_file(filepath: str):
 # Load animation from assets
 lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331073505.json")
 
-# Centered animation
+# Load and display logo
+logo = Image.open("ui_code/assets/Workmates-Pic.png")
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.image(logo, width=150)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# Display centered Lottie animation
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 st_lottie(lottie_animation, height=250, key="welcome")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -34,6 +40,7 @@ if not COGNITO_USER_POOL_ID or not COGNITO_APP_CLIENT_ID or not COGNITO_REGION:
     st.error("Cognito configuration is missing.")
     st.stop()
 
+# Authentication function
 def authenticate(username, password):
     client = boto3.client('cognito-idp', region_name=COGNITO_REGION)
     try:
@@ -86,16 +93,11 @@ else:
     with tab2:
         st.info("Please contact your Admin to get registered.")
 
-# Navigation buttons
+# Navigation buttons (mobile responsive)
 if st.session_state['authenticated']:
     st.write("Please select where you'd like to go:")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button('New WAFR Review'):
-            st.switch_page("pages/1_New_WAFR_Review.py")
-    with col2:
-        if st.button('Existing WAFR Reviews'):
-            st.switch_page("pages/2_Existing_WAFR_Reviews.py")
-    with col3:
-        if st.button('System Architecture'):
-            st.switch_page("pages/3_System_Architecture.py")
+
+    with st.container():
+        st.button('New WAFR Review', on_click=lambda: st.switch_page("pages/1_New_WAFR_Review.py"), use_container_width=True)
+        st.button('Existing WAFR Reviews', on_click=lambda: st.switch_page("pages/2_Existing_WAFR_Reviews.py"), use_container_width=True)
+        st.button('System Architecture', on_click=lambda: st.switch_page("pages/3_System_Architecture.py"), use_container_width=True)
