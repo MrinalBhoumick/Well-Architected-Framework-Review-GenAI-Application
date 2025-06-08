@@ -477,10 +477,10 @@ class WafrGenaiAcceleratorStack(Stack):
         user_data_script = re.sub(r'{{REGION}}', Stack.of(self).region, user_data_script)
   
         ec2_create = ec2.Instance(self, "StreamlitAppInstance-" + entryTimestamp,
-            instance_type=ec2.InstanceType("t2.micro"),
+            instance_type=ec2.InstanceType("t3.medium"),
             machine_image=ec2.AmazonLinuxImage(generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023),
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             security_group=ec2_security_group,
             role=ec2Role,
             associate_public_ip_address=True,
@@ -556,6 +556,25 @@ class WafrGenaiAcceleratorStack(Stack):
             peer=alb_security_group,
             connection=ec2.Port.tcp(8501),
             description="Allow HTTP traffic from ALB"
+        )
+        # Allow SSH access
+        ec2_security_group.add_ingress_rule(
+            peer=ec2.Peer.any_ipv4(),
+            connection=ec2.Port.tcp(22),
+            description="Allow SSH access"
+        )
+        # Allow HTTP access
+        ec2_security_group.add_ingress_rule(
+            peer=ec2.Peer.any_ipv4(),
+            connection=ec2.Port.tcp(80),
+            description="Allow HTTP access"
+        )
+
+        # Allow HTTPS access
+        ec2_security_group.add_ingress_rule(
+            peer=ec2.Peer.any_ipv4(),
+            connection=ec2.Port.tcp(443),
+            description="Allow HTTPS access"
         )
             
         #Print the Cloudfront Public Domain Name after CDK Deployment for easier access
