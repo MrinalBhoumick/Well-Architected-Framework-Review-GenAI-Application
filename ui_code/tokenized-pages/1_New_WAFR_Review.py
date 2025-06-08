@@ -13,67 +13,6 @@ from PIL import Image
 # ------------------- PAGE CONFIG -------------------
 st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
 
-# ------------------- DARK THEME CSS -------------------
-st.markdown("""
-    <style>
-    body {
-        background-color: #0f172a;
-        color: #e2e8f0;
-    }
-
-    .main {
-        padding: 2rem;
-    }
-
-    .stButton>button {
-        background-color: #3b82f6;
-        color: white;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        border: none;
-    }
-
-    .stButton>button:hover {
-        background-color: #2563eb;
-        transition: background-color 0.3s ease-in-out;
-    }
-
-    .stFileUploader {
-        background-color: #1e293b;
-        border: 1px dashed #64748b;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        color: #e2e8f0;
-    }
-
-    .stTextInput>div>input, .stTextArea>div>textarea, .stSelectbox>div>div>div>div {
-        background-color: #1e293b;
-        color: #e2e8f0;
-        border: 1px solid #475569;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-    }
-
-    .stExpanderHeader {
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: #f8fafc;
-    }
-
-    h1, h2, h3 {
-        color: #f1f5f9;
-    }
-
-    .center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # ------------------- ENVIRONMENT VARIABLES -------------------
 os.environ['AWS_REGION'] = st.secrets["AWS_REGION"]
 AWS_REGION = st.secrets["AWS_REGION"]
@@ -95,10 +34,8 @@ lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.js
 
 # ------------------- LOGO -------------------
 logo = Image.open("ui_code/assets/Workmates-Pic.png")
-st.markdown("<div class='center'>", unsafe_allow_html=True)
 st.image(logo, width=150)
 st_lottie(lottie_animation, speed=1, width=400, height=250, key="wafr_anim")
-st.markdown("</div>", unsafe_allow_html=True)
 
 # ------------------- AWS CLIENTS -------------------
 s3_client = boto3.client('s3', region_name=AWS_REGION)
@@ -183,7 +120,7 @@ def create_wafr_analysis(analysis_data, uploaded_file):
         'environment': analysis_data['environment'],
         'workload_desc': analysis_data['workload_desc'],
         'industry_type': analysis_data['industry_type'],
-        'analysis_review_type': analysis_data['analysis_review_type']
+        'analysis_review_type': "Quick"
     }
 
     message_id = trigger_wafr_review(wafr_review_input)
@@ -206,7 +143,7 @@ def create_wafr_analysis(analysis_data, uploaded_file):
             'workload_desc': analysis_data['workload_desc'],
             'review_owner': analysis_data['review_owner'],
             'industry_type': analysis_data['industry_type'],
-            'analysis_review_type': analysis_data['analysis_review_type']
+            'analysis_review_type': "Quick"
         })
         return True, f"WAFR Analysis created successfully! Message ID: {message_id}"
     else:
@@ -255,18 +192,11 @@ if st.session_state.success_message:
         st.session_state.success_message = None
         st.rerun()
 
-# ------------------- FORM SECTIONS -------------------
+# ------------------- FORM UI -------------------
 st.title("📄 Create New WAFR Analysis")
 
-with st.expander("Workload Analysis", expanded=True):
-    st.subheader("Workload Analysis")
-    analysis_review_type = st.selectbox("Analysis Type", ["Quick", "Deep with Well-Architected Tool"],
-                                        index=["Quick", "Deep with Well-Architected Tool"].index(
-                                            st.session_state.form_data['analysis_review_type']))
-    analysis_name = st.text_input("Workload Name", value=st.session_state.form_data['analysis_name'], max_chars=100)
-    workload_desc = st.text_area("Workload Description", value=st.session_state.form_data['workload_desc'], height=100, max_chars=250)
-    if workload_desc and len(workload_desc) < 3:
-        st.error("Workload Description must be at least 3 characters long")
+analysis_name = st.text_input("Workload Name", value=st.session_state.form_data['analysis_name'], max_chars=100)
+workload_desc = st.text_area("Workload Description", value=st.session_state.form_data['workload_desc'], height=100, max_chars=250)
 
 with st.expander("Additional Details", expanded=True):
     col1, col2 = st.columns(2)
@@ -277,7 +207,7 @@ with st.expander("Additional Details", expanded=True):
         review_owner = st.text_input("Review Owner", value=st.session_state.form_data['review_owner'])
         st.text_input("Created By", value=st.session_state.form_data['created_by'], disabled=True)
     with col2:
-        industry_type = st.selectbox("Industry Type", [...])  # Same list from your code
+        industry_type = st.selectbox("Industry Type", ["Agriculture", "Education", "Healthcare", "Finance", "Technology"])
         wafr_lens = st.selectbox("WAFR Lens", lens_list, index=lens_list.index(st.session_state.form_data['wafr_lens']))
 
 with st.expander("Select Pillars", expanded=True):
@@ -301,7 +231,7 @@ if st.button("Create WAFR Analysis", type="primary", use_container_width=True):
         st.error("Please upload a document.")
     elif duplicate_wafr_accelerator_workload(analysis_name):
         st.error("Workload with the same name already exists!")
-    elif analysis_review_type == 'Deep with Well-Architected Tool' and duplicate_wa_tool_workload(analysis_name):
+    elif duplicate_wa_tool_workload(analysis_name):
         st.error("Workload with the same name already exists in AWS Well Architected Tool!")
     else:
         st.session_state.form_data.update({
@@ -312,7 +242,7 @@ if st.button("Create WAFR Analysis", type="primary", use_container_width=True):
             'workload_desc': workload_desc,
             'review_owner': review_owner,
             'industry_type': industry_type,
-            'analysis_review_type': analysis_review_type
+            'analysis_review_type': "Quick"
         })
         with st.spinner("Creating WAFR Analysis..."):
             success, message = create_wafr_analysis(st.session_state.form_data, uploaded_file)
@@ -333,7 +263,7 @@ if st.session_state.form_submitted:
         'workload_desc': '',
         'review_owner': '',
         'industry_type': 'Agriculture',
-        'analysis_review_type': 'Quick'
+        'analysis_review_type': "Quick"
     }
     st.session_state.form_submitted = False
     st.rerun()
