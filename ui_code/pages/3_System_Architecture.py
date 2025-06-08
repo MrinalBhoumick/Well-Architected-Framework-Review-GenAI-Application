@@ -5,6 +5,11 @@ if 'authenticated' not in st.session_state or not st.session_state['authenticate
 
 # Check authentication
 
+# ---------------- Load and display logo --------------------
+logo = Image.open("ui_code/assets/Workmates-Pic.png")
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.image(logo, width=150)
+st.markdown("</div>", unsafe_allow_html=True)
 
 def architecture():
     st.title("Architecture")
