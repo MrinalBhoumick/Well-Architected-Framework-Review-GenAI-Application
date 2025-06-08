@@ -1,4 +1,6 @@
 import streamlit as st
+from PIL import Image
+
 if 'authenticated' not in st.session_state or not st.session_state['authenticated']:
     st.warning('You are not logged in. Please log in to access this page.')
     st.switch_page("pages/1_Login.py")
