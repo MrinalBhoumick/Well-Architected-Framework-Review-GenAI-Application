@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 import os
 from streamlit_lottie import st_lottie
 import requests
+from PIL import Image
 
 # Securely set AWS credentials and configuration from Streamlit secrets
 os.environ['AWS_REGION'] = st.secrets["AWS_REGION"]
