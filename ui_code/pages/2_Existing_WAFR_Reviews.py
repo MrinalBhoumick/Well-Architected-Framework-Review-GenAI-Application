@@ -198,26 +198,26 @@ def main():
         try:
             inference_profile_arn = st.secrets["INFERENCE_PROFILE_ARN"]
             guardrail_id = st.secrets.get("GUARDRAIL_ID", None)
-
+        
+            kwargs = {
+                "modelId": model_id,
+                "body": body,
+                "contentType": "application/json",
+                "accept": "*/*",
+                "inferenceProfileArn": inference_profile_arn,
+            }
+        
             if guardrail_id:
-                response = client.invoke_model_with_response_stream(
-                    modelId=model_id,
-                    body=body,
-                    inferenceModifier={"inferenceProfileArn": inference_profile_arn},
-                    guardrailIdentifier=guardrail_id,
-                    guardrailVersion="DRAFT"
-                )
-            else:
-                response = client.invoke_model_with_response_stream(
-                    modelId=model_id,
-                    body=body,
-                    inferenceModifier={"inferenceProfileArn": inference_profile_arn}
-                )
-
+                kwargs["guardrailIdentifier"] = guardrail_id
+                kwargs["guardrailVersion"] = "DRAFT"
+        
+            response = client.invoke_model(**kwargs)
+        
+            response_body = json.loads(response['body'].read())
+            answer = response_body['content'][0]['text']
             st.subheader("Response")
-            stream = response.get("body")
-            st.write_stream(parse_stream(stream))
-
+            st.write(answer)
+        
         except Exception as e:
             st.error("Model invocation failed.")
             st.exception(e)
