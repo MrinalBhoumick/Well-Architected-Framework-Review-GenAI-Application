@@ -8,6 +8,7 @@ from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 import os
 import requests
+from PIL import Image
 
 # ------------------- PAGE CONFIG (must be first) -------------------
 st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
