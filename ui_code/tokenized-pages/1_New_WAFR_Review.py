@@ -28,7 +28,13 @@ def load_lottie_file(filepath: str):
         return json.load(f)
 
 # Load animation from assets
-lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json")
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json") 
+
+# ---------------- Load and display logo ------------------
+logo = Image.open("ui_code/assets/Workmates-Pic.png")
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.image(logo, width=150)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Centered animation
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
