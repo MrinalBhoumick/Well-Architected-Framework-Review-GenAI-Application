@@ -79,8 +79,7 @@ def load_data():
                 df[col] = ''
 
         if 'pillars' in df.columns:
-            df['pillars'] = df['pillars'].apply(
-                lambda p: p if isinstance(p, list) else [])
+            df['pillars'] = df['pillars'].apply(lambda p: p if isinstance(p, list) else [])
         else:
             df['pillars'] = [[] for _ in range(len(df))]
 
@@ -197,23 +196,28 @@ def main():
         })
 
         try:
+            inference_profile_arn = st.secrets["INFERENCE_PROFILE_ARN"]
             guardrail_id = st.secrets.get("GUARDRAIL_ID", None)
+
             if guardrail_id:
                 response = client.invoke_model_with_response_stream(
                     modelId=model_id,
                     body=body,
+                    inferenceModifier={"inferenceProfileArn": inference_profile_arn},
                     guardrailIdentifier=guardrail_id,
                     guardrailVersion="DRAFT"
                 )
             else:
                 response = client.invoke_model_with_response_stream(
                     modelId=model_id,
-                    body=body
+                    body=body,
+                    inferenceModifier={"inferenceProfileArn": inference_profile_arn}
                 )
 
             st.subheader("Response")
             stream = response.get("body")
             st.write_stream(parse_stream(stream))
+
         except Exception as e:
             st.error("Model invocation failed.")
             st.exception(e)
