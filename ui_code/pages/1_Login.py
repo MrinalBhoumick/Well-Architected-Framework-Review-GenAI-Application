@@ -12,26 +12,80 @@ logger = logging.getLogger(__name__)
 # Page config
 st.set_page_config(page_title="Login", layout="wide")
 
+# Apply custom CSS styling
+st.markdown("""
+    <style>
+    body {
+        background-color: #f0f2f6;
+    }
+
+    .center-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #d3d3d3;
+    }
+
+    .stPasswordInput>div>div>input {
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #d3d3d3;
+    }
+
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px 0px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        font-size: 16px;
+        padding: 8px 16px;
+    }
+
+    .stImage img {
+        border-radius: 50%;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Load Lottie animation from local file
 def load_lottie_file(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
 
-# Load animation from assets
+# Load animation and logo
 lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331073505.json")
-
-# Load and display logo
 logo = Image.open("ui_code/assets/Workmates-Pic.png")
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+
+# Display logo
+st.markdown("<div class='center-content'>", unsafe_allow_html=True)
 st.image(logo, width=150)
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Display centered Lottie animation
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+# Display animation
+st.markdown("<div class='center-content'>", unsafe_allow_html=True)
 st_lottie(lottie_animation, height=250, key="welcome")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Cognito Config
+# Cognito config
 COGNITO_USER_POOL_ID = st.secrets.get("COGNITO_USER_POOL_ID")
 COGNITO_APP_CLIENT_ID = st.secrets.get("COGNITO_APP_CLIENT_ID")
 COGNITO_REGION = st.secrets.get("COGNITO_REGION")
@@ -58,7 +112,7 @@ def authenticate(username, password):
         st.error(f"Authentication error: {str(e)}")
         return False, None
 
-# Login UI
+# Login page content
 st.title('Login')
 
 if 'authenticated' not in st.session_state:
