@@ -18,7 +18,7 @@ optional_features = {
 
 WafrGenaiAcceleratorStack(
     app,
-    "WellArchitectedReviewUsingGenAIStack",
+    "WellArchitected-Review-Using-GenAIStack",
     tags=tags,
     optional_features=optional_features,
     env=cdk.Environment(account="207567766326", region="ap-south-1")
