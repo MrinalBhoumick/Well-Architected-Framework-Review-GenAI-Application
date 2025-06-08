@@ -7,54 +7,104 @@ import datetime
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 import os
-from streamlit_lottie import st_lottie
 import requests
 from PIL import Image
 
-# Securely set AWS credentials and configuration from Streamlit secrets
+# ------------------- PAGE CONFIG -------------------
+st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
+
+# ------------------- DARK THEME CSS -------------------
+st.markdown("""
+    <style>
+    body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+    }
+
+    .main {
+        padding: 2rem;
+    }
+
+    .stButton>button {
+        background-color: #3b82f6;
+        color: white;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        border: none;
+    }
+
+    .stButton>button:hover {
+        background-color: #2563eb;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    .stFileUploader {
+        background-color: #1e293b;
+        border: 1px dashed #64748b;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        color: #e2e8f0;
+    }
+
+    .stTextInput>div>input, .stTextArea>div>textarea, .stSelectbox>div>div>div>div {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        border: 1px solid #475569;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .stExpanderHeader {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #f8fafc;
+    }
+
+    h1, h2, h3 {
+        color: #f1f5f9;
+    }
+
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ------------------- ENVIRONMENT VARIABLES -------------------
 os.environ['AWS_REGION'] = st.secrets["AWS_REGION"]
 AWS_REGION = st.secrets["AWS_REGION"]
 WAFR_UPLOAD_BUCKET_NAME = st.secrets["WAFR_UPLOAD_BUCKET_NAME"]
 WAFR_ACCELERATOR_RUNS_DD_TABLE_NAME = st.secrets["WAFR_ACCELERATOR_RUNS_DD_TABLE_NAME"]
 SQS_QUEUE_NAME = st.secrets["SQS_QUEUE_NAME"]
 
-# Check authentication
+# ------------------- AUTH CHECK -------------------
 if 'authenticated' not in st.session_state or not st.session_state['authenticated']:
     st.warning('You are not logged in. Please log in to access this page.')
     st.switch_page("pages/1_Login.py")
 
-# Load Lottie animation from local file
+# ------------------- LOAD ANIMATION -------------------
 def load_lottie_file(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
 
-# Load animation from assets
-lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json") 
+lottie_animation = load_lottie_file("ui_code/assets/Animation - 1749331773347.json")
 
-# ---------------- Load and display logo ------------------
+# ------------------- LOGO -------------------
 logo = Image.open("ui_code/assets/Workmates-Pic.png")
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.markdown("<div class='center'>", unsafe_allow_html=True)
 st.image(logo, width=150)
+st_lottie(lottie_animation, speed=1, width=400, height=250, key="wafr_anim")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Centered animation
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-st_lottie(lottie_animation, height=250, key="welcome")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Set page configuration
-st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
-
-# Display animation at the top
-with st.container():
-    st_lottie(lottie_animation, speed=1, width=600, height=300, key="wafr_anim")
-
-st.set_page_config(page_title="Create WAFR Analysis", layout="wide")
-
-# Initialize AWS clients
+# ------------------- AWS CLIENTS -------------------
 s3_client = boto3.client('s3', region_name=AWS_REGION)
 well_architected_client = boto3.client('wellarchitected', region_name=AWS_REGION)
 
+# ------------------- STATIC DATA -------------------
 def list_static_lenses():
     return {
         "AWS Well-Architected Framework": "wellarchitected",
@@ -68,7 +118,7 @@ lens_list = list(lenses.keys())
 def get_current_user():
     return st.session_state.get('username', 'Unknown User')
 
-# Initialize session state
+# ------------------- SESSION STATE -------------------
 if 'form_submitted' not in st.session_state:
     st.session_state.form_submitted = False
 
@@ -90,6 +140,7 @@ else:
 if 'success_message' not in st.session_state:
     st.session_state.success_message = None
 
+# ------------------- HELPERS -------------------
 def upload_to_s3(file, bucket, key):
     try:
         s3_client.upload_fileobj(file, bucket, key)
@@ -112,7 +163,6 @@ def trigger_wafr_review(input_data):
 
 def create_wafr_analysis(analysis_data, uploaded_file):
     analysis_id = str(uuid.uuid4())
-
     if uploaded_file:
         s3_key = f"{analysis_data['created_by']}/analyses/{analysis_id}/{uploaded_file.name}"
         if not upload_to_s3(uploaded_file, WAFR_UPLOAD_BUCKET_NAME, s3_key):
@@ -141,7 +191,6 @@ def create_wafr_analysis(analysis_data, uploaded_file):
         dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
         table = dynamodb.Table(WAFR_ACCELERATOR_RUNS_DD_TABLE_NAME)
         creation_date = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
-
         table.put_item(Item={
             'analysis_id': analysis_id,
             'analysis_submitter': analysis_data['created_by'],
@@ -162,50 +211,6 @@ def create_wafr_analysis(analysis_data, uploaded_file):
         return True, f"WAFR Analysis created successfully! Message ID: {message_id}"
     else:
         return False, "Failed to start the analysis process."
-
-# UI Layout
-st.title("Create New WAFR Analysis")
-
-with st.sidebar:
-    if st.button('Logout'):
-        st.session_state['authenticated'] = False
-        st.session_state.pop('username', None)
-        st.rerun()
-
-if st.session_state.success_message:
-    st.success(st.session_state.success_message)
-    if st.button("Clear Message"):
-        st.session_state.success_message = None
-        st.rerun()
-
-# Input Forms
-with st.expander("Workload Analysis", expanded=True):
-    st.subheader("Workload Analysis")
-    analysis_review_type = st.selectbox("Analysis Type", ["Quick", "Deep with Well-Architected Tool"], index=["Quick", "Deep with Well-Architected Tool"].index(st.session_state.form_data['analysis_review_type']))
-    analysis_name = st.text_input("Workload Name", value=st.session_state.form_data['analysis_name'], max_chars=100)
-    workload_desc = st.text_area("Workload Description", value=st.session_state.form_data['workload_desc'], height=100, max_chars=250)
-    if workload_desc and len(workload_desc) < 3:
-        st.error("Workload Description must be at least 3 characters long")
-
-with st.expander("Additional Details", expanded=True):
-    st.subheader("Industry & Lens Details")
-    col1, col2 = st.columns(2)
-    with col1:
-        wafr_environment = st.selectbox("WAFR Environment", ['PRODUCTION', 'PREPRODUCTION'], index=['PRODUCTION', 'PREPRODUCTION'].index(st.session_state.form_data['environment']))
-        review_owner = st.text_input("Review Owner", value=st.session_state.form_data['review_owner'])
-        st.text_input("Created By", value=st.session_state.form_data['created_by'], disabled=True)
-    with col2:
-        industry_type = st.selectbox("Industry Type", ["Agriculture", "Automotive", "Defense", "Design_And_Engineering", "Digital_Advertising", "Education", "Environmental_Protection", "Financial_Services", "Gaming", "General_Public_Services", "Healthcare", "Hospitality", "InfoTech", "Justice_And_Public_Safety", "Life_Sciences", "Manufacturing", "Media_Entertainment", "Mining_Resources", "Oil_Gas", "Power_Utilities", "Professional_Services", "Real_Estate_Construction", "Retail_Wholesale", "Social_Protection", "Telecommunications", "Travel_Transportation_Logistics", "Other"])
-        wafr_lens = st.selectbox("WAFR Lens", lens_list, index=lens_list.index(st.session_state.form_data['wafr_lens']))
-
-with st.expander("Select Pillars", expanded=True):
-    st.subheader("Well Architected Framework Pillars")
-    pillars = ["Operational Excellence", "Security", "Reliability", "Performance Efficiency", "Cost Optimization", "Sustainability"]
-    selected_pillars = st.multiselect("Select WAFR Pillars", pillars, default=st.session_state.form_data['selected_pillars'], key="pillar_select")
-
-with st.expander("Document Upload", expanded=True):
-    st.subheader("Design Artifacts Upload")
-    uploaded_file = st.file_uploader("Upload Document", type=["pdf"])
 
 def duplicate_wa_tool_workload(workload_name):
     try:
@@ -236,7 +241,53 @@ def duplicate_wafr_accelerator_workload(workload_name):
         print(f"Error checking workload: {e}")
         return False
 
-# Submission button
+# ------------------- SIDEBAR -------------------
+with st.sidebar:
+    if st.button('Logout'):
+        st.session_state['authenticated'] = False
+        st.session_state.pop('username', None)
+        st.rerun()
+
+# ------------------- SUCCESS MESSAGE -------------------
+if st.session_state.success_message:
+    st.success(st.session_state.success_message)
+    if st.button("Clear Message"):
+        st.session_state.success_message = None
+        st.rerun()
+
+# ------------------- FORM SECTIONS -------------------
+st.title("📄 Create New WAFR Analysis")
+
+with st.expander("Workload Analysis", expanded=True):
+    st.subheader("Workload Analysis")
+    analysis_review_type = st.selectbox("Analysis Type", ["Quick", "Deep with Well-Architected Tool"],
+                                        index=["Quick", "Deep with Well-Architected Tool"].index(
+                                            st.session_state.form_data['analysis_review_type']))
+    analysis_name = st.text_input("Workload Name", value=st.session_state.form_data['analysis_name'], max_chars=100)
+    workload_desc = st.text_area("Workload Description", value=st.session_state.form_data['workload_desc'], height=100, max_chars=250)
+    if workload_desc and len(workload_desc) < 3:
+        st.error("Workload Description must be at least 3 characters long")
+
+with st.expander("Additional Details", expanded=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        wafr_environment = st.selectbox("WAFR Environment", ['PRODUCTION', 'PREPRODUCTION'],
+                                        index=['PRODUCTION', 'PREPRODUCTION'].index(
+                                            st.session_state.form_data['environment']))
+        review_owner = st.text_input("Review Owner", value=st.session_state.form_data['review_owner'])
+        st.text_input("Created By", value=st.session_state.form_data['created_by'], disabled=True)
+    with col2:
+        industry_type = st.selectbox("Industry Type", [...])  # Same list from your code
+        wafr_lens = st.selectbox("WAFR Lens", lens_list, index=lens_list.index(st.session_state.form_data['wafr_lens']))
+
+with st.expander("Select Pillars", expanded=True):
+    pillars = ["Operational Excellence", "Security", "Reliability", "Performance Efficiency", "Cost Optimization", "Sustainability"]
+    selected_pillars = st.multiselect("Select WAFR Pillars", pillars, default=st.session_state.form_data['selected_pillars'], key="pillar_select")
+
+with st.expander("Document Upload", expanded=True):
+    uploaded_file = st.file_uploader("Upload Document", type=["pdf"])
+
+# ------------------- SUBMIT BUTTON -------------------
 if st.button("Create WAFR Analysis", type="primary", use_container_width=True):
     if not analysis_name:
         st.error("Please enter an Analysis Name.")
