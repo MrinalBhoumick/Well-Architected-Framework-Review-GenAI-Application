@@ -5,6 +5,7 @@ import boto3
 import json
 from boto3.dynamodb.types import TypeDeserializer
 import os
+from PIL import Image
 
 # Set AWS credentials securely
 os.environ['AWS_ACCESS_KEY_ID'] = st.secrets["AWS_ACCESS_KEY_ID"]
