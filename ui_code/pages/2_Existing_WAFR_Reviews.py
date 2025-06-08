@@ -37,7 +37,7 @@ if st.sidebar.button('Logout'):
 client = boto3.client("bedrock-runtime", region_name=os.environ["AWS_REGION"])
 dynamodb = boto3.client("dynamodb", region_name=os.environ["AWS_REGION"])
 
-model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+model_id = "anthropic.claude-sonnet-4-20250514-v1:0"
 
 def load_data():
     try:
