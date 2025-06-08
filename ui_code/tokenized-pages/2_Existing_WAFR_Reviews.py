@@ -6,7 +6,7 @@ import json
 from boto3.dynamodb.types import TypeDeserializer
 import os
 
-# Set AWS credentials from Streamlit secrets securely
+# Set AWS credentials securely
 os.environ['AWS_ACCESS_KEY_ID'] = st.secrets["AWS_ACCESS_KEY_ID"]
 os.environ['AWS_SECRET_ACCESS_KEY'] = st.secrets["AWS_SECRET_ACCESS_KEY"]
 os.environ['AWS_REGION'] = st.secrets["AWS_REGION"]
@@ -34,10 +34,12 @@ def logout():
 if st.sidebar.button('Logout'):
     logout()
 
+# AWS clients
 client = boto3.client("bedrock-runtime", region_name=os.environ["AWS_REGION"])
 dynamodb = boto3.client("dynamodb", region_name=os.environ["AWS_REGION"])
 
-model_id = "anthropic.claude-sonnet-4-20250514-v1:0"
+# Use inference profile ARN as modelId
+model_id = st.secrets["INFERENCE_PROFILE_ARN"]
 
 def load_data():
     try:
@@ -79,18 +81,19 @@ def load_data():
                 df[col] = ''
 
         if 'pillars' in df.columns:
-            df['pillars'] = df['pillars'].apply(lambda p: p if isinstance(p, list) else [])
+            df['pillars'] = df['pillars'].apply(
+                lambda p: p if isinstance(p, list) else [])
         else:
             df['pillars'] = [[] for _ in range(len(df))]
 
         if 'selected_wafr_pillars' not in df.columns:
             df['selected_wafr_pillars'] = ''
 
-        return df[
-            ['Analysis Id', 'Workload Name', 'Workload Description', 'Analysis Type',
-             'WAFR Lens', 'Creation Date', 'Status', 'Created By', 'Review Owner',
-             'Solution Summary', 'pillars', 'selected_wafr_pillars', 'Document']
-        ]
+        return df[[
+            'Analysis Id', 'Workload Name', 'Workload Description', 'Analysis Type',
+            'WAFR Lens', 'Creation Date', 'Status', 'Created By', 'Review Owner',
+            'Solution Summary', 'pillars', 'selected_wafr_pillars', 'Document'
+        ]]
     except Exception as e:
         st.error(f"Failed to load data: {e}")
         return pd.DataFrame()
@@ -130,19 +133,16 @@ def main():
     st.subheader("WAFR Analysis Runs", divider="rainbow")
 
     df = load_data()
-
     if df.empty:
         return
 
     st.dataframe(df[['Analysis Id', 'Workload Name', 'Analysis Type', 'WAFR Lens', 'Creation Date', 'Status', 'Created By']], use_container_width=True)
 
     selected_name = st.selectbox("Select an analysis to view details:", df['Workload Name'].tolist())
-
     if not selected_name:
         return
 
     record = df[df['Workload Name'] == selected_name].iloc[0]
-
     tab_titles = ["Summary", "Solution Summary"] + [p['pillar_name'] for p in record['pillars']]
     tabs = st.tabs(tab_titles)
 
@@ -196,28 +196,19 @@ def main():
         })
 
         try:
-            inference_profile_arn = st.secrets["INFERENCE_PROFILE_ARN"]
-            guardrail_id = st.secrets.get("GUARDRAIL_ID", None)
-        
-            kwargs = {
-                "modelId": model_id,
-                "body": body,
-                "contentType": "application/json",
-                "accept": "*/*",
-                "inferenceProfileArn": inference_profile_arn,
-            }
-        
-            if guardrail_id:
-                kwargs["guardrailIdentifier"] = guardrail_id
-                kwargs["guardrailVersion"] = "DRAFT"
-        
-            response = client.invoke_model(**kwargs)
-        
-            response_body = json.loads(response['body'].read())
-            answer = response_body['content'][0]['text']
+            response = client.invoke_model(
+                modelId=model_id,  # Use inference profile ARN directly
+                contentType="application/json",
+                accept="application/json",
+                body=body.encode("utf-8")
+            )
+
+            response_body = json.loads(response["body"].read().decode("utf-8"))
+            answer = response_body.get("content", [])[0].get("text", "").strip()
+
             st.subheader("Response")
             st.write(answer)
-        
+
         except Exception as e:
             st.error("Model invocation failed.")
             st.exception(e)
