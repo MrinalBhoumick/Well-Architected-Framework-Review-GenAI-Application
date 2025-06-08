@@ -323,7 +323,7 @@ class WafrGenaiAcceleratorStack(Stack):
         
         # Create VPC
         vpc = ec2.Vpc(self, "StreamlitAppVPC-" + entryTimestamp,
-            max_azs=2,
+            max_azs=3,
             nat_gateways=1,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
@@ -393,7 +393,7 @@ class WafrGenaiAcceleratorStack(Stack):
                                 "bedrock:InvokeModelWithResponseStream"
                             ],
                             resources=[
-                                f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
+                                f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0"
                             ],
                             effect=iam.Effect.ALLOW
                         ),
@@ -483,14 +483,14 @@ class WafrGenaiAcceleratorStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             security_group=ec2_security_group,
             role=ec2Role,
-            associate_public_ip_address=False,  # This disables public IPv4
+            associate_public_ip_address=True,
             #detailed_monitoring=True,
             user_data=ec2.UserData.custom(user_data_script),
             block_devices=[
                 ec2.BlockDevice(
                     device_name="/dev/xvda",
                     volume=ec2.BlockDeviceVolume.ebs(
-                        volume_size=8,  # Size in GB
+                        volume_size=10,  # Size in GB
                         encrypted=True,
                         delete_on_termination=True,  # Optional: delete the volume when the instance is terminated
                     )
@@ -860,7 +860,7 @@ class WafrGenaiAcceleratorStack(Stack):
                                 "bedrock:InvokeModelWithResponseStream"
                             ],
                             resources=[
-                                f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
+                                f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0"
                             ],
                             effect=iam.Effect.ALLOW
                         ),
@@ -1132,7 +1132,7 @@ class WafrGenaiAcceleratorStack(Stack):
             memory_size=512,
             environment={
                 "KNOWLEDGE_BASE_ID": KB_ID,
-                "LLM_MODEL_ID": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                "LLM_MODEL_ID": "anthropic.claude-sonnet-4-20250514-v1:0",
                 "REGION": Stack.of(self).region,
                 "UPLOAD_BUCKET_NAME": userUploadBucket.bucket_name,
                 "WAFR_ACCELERATOR_RUNS_DD_TABLE_NAME": WAFR_RUNS_TABLE,
